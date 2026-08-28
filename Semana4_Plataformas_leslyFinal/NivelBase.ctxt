@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.target=NivelBase
+comment1.params=numeroNivel\ nombreFondo\ repeticiones
+comment1.target=NivelBase(int,\ java.lang.String,\ int)
+comment10.params=
+comment10.target=void\ siguienteNivel()
+comment2.params=
+comment2.target=void\ prepararFondo()
+comment3.params=
+comment3.target=void\ actualizarFondo()
+comment4.params=
+comment4.target=void\ prepararJugador()
+comment5.params=cantidad
+comment5.target=boolean\ moverCamara(int)
+comment6.params=cantidad
+comment6.target=void\ moverElementosEscenario(int)
+comment7.params=
+comment7.target=int\ getDesplazamiento()
+comment8.params=
+comment8.target=int\ getNumeroNivel()
+comment9.params=
+comment9.target=boolean\ camaraAlFinal()
+numComments=11

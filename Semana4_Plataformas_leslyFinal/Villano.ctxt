@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=Villano
+comment1.params=
+comment1.target=Villano()
+comment2.params=
+comment2.target=void\ crearImagen()
+comment3.params=
+comment3.target=void\ act()
+comment4.params=
+comment4.target=void\ patrullar()
+comment5.params=
+comment5.target=void\ revisarColisionPrecisa()
+numComments=6
