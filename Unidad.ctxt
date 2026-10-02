@@ -1,0 +1,27 @@
+#BlueJ class context
+comment0.target=Unidad
+comment1.params=nombre\ vidaMaxima\ ataque
+comment1.target=Unidad(java.lang.String,\ int,\ int)
+comment10.params=
+comment10.target=int\ getAtaque()
+comment11.params=
+comment11.target=java.lang.String\ getNombre()
+comment12.params=nuevaVida
+comment12.target=void\ setVida(int)
+comment2.params=cantidad
+comment2.target=void\ recibirDanio(int)
+comment3.params=
+comment3.target=void\ alRecibirDanio()
+comment4.params=cantidad
+comment4.target=void\ curar(int)
+comment5.params=
+comment5.target=boolean\ estaViva()
+comment6.params=
+comment6.target=boolean\ estaDerrotada()
+comment7.params=
+comment7.target=int\ getPorcentajeVida()
+comment8.params=
+comment8.target=int\ getVida()
+comment9.params=
+comment9.target=int\ getVidaMaxima()
+numComments=13

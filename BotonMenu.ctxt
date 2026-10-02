@@ -1,0 +1,19 @@
+#BlueJ class context
+comment0.target=BotonMenu
+comment1.params=nombreImagen\ accion
+comment1.target=BotonMenu(java.lang.String,\ java.lang.String)
+comment2.params=
+comment2.target=void\ act()
+comment3.params=nombreArchivo
+comment3.target=void\ cargarImagenes(java.lang.String)
+comment4.params=ancho\ alto
+comment4.target=greenfoot.GreenfootImage\ crearLienzoTransparente(int,\ int)
+comment5.params=imagen
+comment5.target=void\ convertirEnRosa(greenfoot.GreenfootImage)
+comment6.params=destino\ glow
+comment6.target=void\ dibujarGlow(greenfoot.GreenfootImage,\ greenfoot.GreenfootImage)
+comment7.params=
+comment7.target=void\ revisarMouse()
+comment8.params=
+comment8.target=void\ revisarClick()
+numComments=9

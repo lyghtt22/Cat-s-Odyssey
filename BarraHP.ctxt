@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=BarraHP
+comment1.params=unidad\ jugador
+comment1.target=BarraHP(Unidad,\ boolean)
+comment2.params=
+comment2.target=void\ act()
+comment3.params=
+comment3.target=void\ actualizarBarra()
+numComments=4

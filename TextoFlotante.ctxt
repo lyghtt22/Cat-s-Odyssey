@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=TextoFlotante
+comment1.params=texto\ esDanio
+comment1.target=TextoFlotante(java.lang.String,\ boolean)
+comment2.params=
+comment2.target=void\ act()
+comment3.params=
+comment3.target=void\ subir()
+comment4.params=texto\ esDanio
+comment4.target=void\ crearImagen(java.lang.String,\ boolean)
+numComments=5
