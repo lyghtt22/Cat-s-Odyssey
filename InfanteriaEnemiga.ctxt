@@ -1,0 +1,17 @@
+#BlueJ class context
+comment0.target=InfanteriaEnemiga
+comment1.params=
+comment1.target=InfanteriaEnemiga()
+comment2.params=
+comment2.target=void\ act()
+comment3.params=
+comment3.target=void\ animarIdle()
+comment4.params=
+comment4.target=void\ actualizarSpriteIdle()
+comment5.params=
+comment5.target=void\ alRecibirDanio()
+comment6.params=
+comment6.target=void\ animarDanio()
+comment7.params=
+comment7.target=int\ obtenerDanioBase()
+numComments=8

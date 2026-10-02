@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=BotonAccion
+comment1.params=tipoAccion\ gestorCombate
+comment1.target=BotonAccion(java.lang.String,\ GestorCombate)
+comment2.params=
+comment2.target=void\ act()
+comment3.params=
+comment3.target=void\ revisarClick()
+numComments=4

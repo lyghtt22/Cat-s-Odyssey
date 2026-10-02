@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=AccionCombate
+comment1.params=nombre\ danio\ probabilidadAcierto
+comment1.target=AccionCombate(java.lang.String,\ int,\ int)
+comment2.params=
+comment2.target=java.lang.String\ getNombre()
+comment3.params=
+comment3.target=int\ getDanio()
+comment4.params=
+comment4.target=int\ getProbabilidadAcierto()
+comment5.params=
+comment5.target=boolean\ acierta()
+numComments=6
