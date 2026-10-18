@@ -1,21 +1,16 @@
-# Cat's Odyssey
+# Avance Proto3D — Unity
 
-Proyecto de Programación de Videojuegos.
+Esta branch contiene el avance del proyecto de Unity en `Proto3D/`.
 
 ## Integrantes
 - Lesly Chuquipoma
 - Anderson Mejías
 
-## Descripción
-Cat's Odyssey es un videojuego 2D de plataformas y puzzles
-protagonizado por Preciosa, una gata que atraviesa distintos
-escenarios con el objetivo de regresar con su dueña.
+## Abrir el proyecto
+1. Clona el repositorio y selecciona la branch `Avance-Proto3D`.
+2. Con Git LFS instalado, ejecuta `git lfs pull` para descargar los recursos que lo utilizan.
+3. En Unity Hub, agrega la carpeta `Proto3D/` y ábrela con la versión indicada en `Proto3D/ProjectSettings/ProjectVersion.txt`.
 
-## Entrega actual
-Primera etapa de análisis arquitectónico utilizando DecidArch.
+El proyecto conserva `Assets/`, `Packages/`, `ProjectSettings/` y sus archivos `.meta`.
 
-Se incluyen:
-- Project Card
-- Stakeholder Cards
-- Concern Cards
-- Event Cards
+Los materiales de otras actividades se encuentran en las demás branches del repositorio.
