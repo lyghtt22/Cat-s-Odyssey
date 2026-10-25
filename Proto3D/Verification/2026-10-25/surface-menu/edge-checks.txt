@@ -1,0 +1,3 @@
+Survey track=0 poses=600 minimum tire clearance=0.01999987
+Survey track=1 poses=720 minimum tire clearance=0.01999569
+PASS physical road contact across both tracks and manual steering/reverse

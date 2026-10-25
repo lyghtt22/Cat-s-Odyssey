@@ -1,0 +1,20 @@
+PASS Four racers preserved
+PASS Power 1 named and explained
+PASS Power 1 consumed by E action
+PASS Turbo active
+PASS Power 2 named and explained
+PASS Power 2 consumed by E action
+PASS Shield blocks one hit
+PASS Power 3 named and explained
+PASS Power 3 consumed by E action
+PASS Chocolate projectile created
+PASS Power 4 named and explained
+PASS Power 4 consumed by E action
+PASS Marshmallow used
+PASS Empty E explains pickup
+PASS Trap warning before contact
+PASS Moving obstacle warning
+PASS Incoming CPU projectile warning
+PASS Hit warning shows slowdown
+PASS Brief alert expires
+PASS Boxes display question marks

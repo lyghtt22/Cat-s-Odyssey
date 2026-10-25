@@ -1,0 +1,7 @@
+PASS Menu and preview character 0
+PASS Menu and preview character 1
+PASS Menu and preview character 2
+PASS Background artwork loaded
+PASS Start selected race closes menu
+PASS Pause still works
+PASS Return to menu
