@@ -222,11 +222,8 @@ public class RacePrototypeGame : MonoBehaviour {
   if(demo){Panel(new Rect(454,28,372,36),new Color(1,.95f,.88f,.9f));GUI.Label(new Rect(473,34,350,26),"DEMO  /  piloto automatico",small);}
   string center=countdown>0?Mathf.CeilToInt(countdown).ToString():countdown>-1?"¡YA!":finished?"¡META!":"";
   if(center!=""){Panel(new Rect(420,236,440,150),new Color(.75f,.2f,.42f,.8f));GUI.Label(new Rect(420,236,440,150),center,big);}
-  if(Time.time<noticeUntil&&!finished){Panel(new Rect(435,161,410,42),new Color(1,.95f,.88f,.95f));GUI.Label(new Rect(452,166,400,35),notice,label);}
+  if(Time.time<noticeUntil&&!finished&&(!items||!items.HasAlert)){Panel(new Rect(435,161,410,42),new Color(1,.95f,.88f,.95f));GUI.Label(new Rect(452,166,400,35),notice,label);}
     if(showMinimap)DrawMinimap();
-  Panel(new Rect(26,235,294,78),new Color(1,.95f,.88f,.96f));
-  if(items){GUI.Label(new Rect(42,242,270,28),"E / "+items.HeldName,label);GUI.Label(new Rect(42,275,270,28),items.ShieldActive?"ESCUDO ACTIVO":items.StatusMessage,small);}
-  GUI.Label(new Rect(35,319,320,28),"M / musica y sonido",small);
   if(paused){Panel(new Rect(390,230,500,230),new Color(1,.95f,.88f,.98f));GUI.Label(new Rect(420,248,450,40),"PAUSA",label);if(GUI.Button(new Rect(420,300,420,38),"Continuar / ESC"))TogglePause();if(GUI.Button(new Rect(420,348,420,38),"Reiniciar carrera"))Restart();if(GUI.Button(new Rect(420,396,420,38),"Elegir vehiculo y pista"))OpenMenu();}
   Panel(new Rect(27,656,917,39),new Color(1,.95f,.88f,.93f));GUI.Label(new Rect(42,664,900,27),"FLECHAS / WASD conducir  ·  ESPACIO freno mano  ·  F turbo  ·  R recuperar  ·  F2 demo · C camara · ESC pausa",small);
   Panel(new Rect(972,607,282,89),new Color(1,.95f,.88f,.96f));

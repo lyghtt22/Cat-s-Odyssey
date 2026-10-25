@@ -28,6 +28,13 @@ public class RaceCandyItems : MonoBehaviour
     int variant, held;
     float shieldUntil, messageUntil;
     string message = "";
+    string proximity = "";
+    float nextWarning;
+    public int HeldId { get { return held; } }
+    public float ShieldSeconds { get { return Mathf.Max(0, shieldUntil-Time.time); } }
+    public string Alert { get { return proximity.Length>0 ? proximity : Time.time<messageUntil ? message : ""; } }
+    public bool HasAlert { get { return Alert.Length>0; } }
+    public static string ItemHelp(int id) { return id==1 ? "Acelera durante 2,5 segundos" : id==2 ? "Bloquea un golpe durante 8 s" : id==3 ? "Lanza chocolate hacia delante" : id==4 ? "Frena rivales a menos de 19 m" : "Cruza una caja rosa con signo ?"; }
 
     public string HeldName { get { return ItemName(held); } }
     public string StatusMessage { get { return Time.time < messageUntil ? message : "E: usar objeto / cajas rosas en la pista"; } }
@@ -45,6 +52,7 @@ public class RaceCandyItems : MonoBehaviour
         warning = MakeMaterial(new Color(.74f, .19f, .48f));
         EnsureRacers();
         BuildTrack();
+        if(!GetComponent<RacePowerHud>())gameObject.AddComponent<RacePowerHud>();
     }
 
     void EnsureRacers()
@@ -155,6 +163,7 @@ public class RaceCandyItems : MonoBehaviour
                 boxes.Add(box); boxReady.Add(0);
                 var mark = Primitive("Lazo de caja", PrimitiveType.Cube, box, cream);
                 mark.localScale = new Vector3(.22f, 1.05f, 1.05f);
+                for(int face=0;face<4;face++){var question=new GameObject("Signo de poder sorpresa").AddComponent<TextMesh>();question.transform.SetParent(box,false);question.transform.localRotation=Quaternion.Euler(0,face*90,0);question.transform.localPosition=question.transform.localRotation*Vector3.back*.54f;question.anchor=TextAnchor.MiddleCenter;question.alignment=TextAlignment.Center;question.fontSize=64;question.characterSize=.25f;question.fontStyle=FontStyle.Bold;question.color=new Color(1,.98f,.85f);question.text="?";}
             }
         }
         for (int i = 0; i < 2; i++)
@@ -243,7 +252,7 @@ public class RaceCandyItems : MonoBehaviour
 
     public void ResetItems()
     {
-        held = 0; shieldUntil = 0; messageUntil = 0;
+        held = 0; shieldUntil = 0; messageUntil = 0; proximity="";nextWarning=0;
         for (int i = projectiles.Count - 1; i >= 0; i--)
             if (projectiles[i]) { projectiles[i].gameObject.SetActive(false); Destroy(projectiles[i].gameObject); }
         projectiles.Clear();
@@ -266,6 +275,7 @@ public class RaceCandyItems : MonoBehaviour
         for (int i = 0; i < racers.Length; i++)
             if (shieldVisuals[i]) shieldVisuals[i].gameObject.SetActive(i == 0 ? ShieldActive : Time.time < cpuShield[i]);
         if (!game.IsRacing || Time.timeScale == 0) return;
+        if(Time.time>=nextWarning){nextWarning=Time.time+.12f;UpdateWarning();}
         for (int i = 0; i < boxes.Count; i++)
         {
             if (!boxes[i]) continue;
@@ -298,7 +308,7 @@ public class RaceCandyItems : MonoBehaviour
                 {
                     if (Time.time < boxReady[b] || !boxes[b] || !Contact(lastPositions[c], now, boxes[b].position, 2.8f, 3.3f)) continue;
                     int item = Random.Range(1, 5);
-                    if (c == 0) { held = item; Notify("OBJETO: " + ItemName(item) + " / E"); }
+                    if (c == 0) { held = item; Notify("¡PODER CONSEGUIDO! " + ItemName(item) + "\nPulsa E: " + ItemHelp(item)); }
                     else { cpuHeld[c] = item; cpuUseAt[c] = Time.time + Random.Range(1.1f, 3.2f); }
                     boxReady[b] = Time.time + 9f; boxes[b].gameObject.SetActive(false); Cue(0); break;
                 }
@@ -326,7 +336,7 @@ public class RaceCandyItems : MonoBehaviour
     void UseRacerItem(int index)
     {
         int item = index == 0 ? held : cpuHeld[index];
-        if (item == 0) return;
+        if (item == 0) { if(index==0)Notify("SIN PODER\nCruza una caja rosa con signo ? para conseguir uno");return; }
         if (index == 0) held = 0; else cpuHeld[index] = 0;
         if (item == 1)
         {
@@ -378,7 +388,7 @@ public class RaceCandyItems : MonoBehaviour
         if (!slows[index]) slows[index] = car.gameObject.AddComponent<CandySlow>();
         slows[index].remaining = Mathf.Max(slows[index].remaining, Mathf.Clamp(seconds, .1f, 5));
         slows[index].race = game;
-        Cue(4); if (index == 0) Notify("MALVAVISCO: VELOCIDAD REDUCIDA");
+        Cue(4); if (index == 0) Notify("¡TE HAN FRENADO!\nVelocidad reducida durante "+seconds.ToString("0.0")+" s");
     }
 
     int IndexOf(CarController car)
@@ -417,8 +427,15 @@ public class RaceCandyItems : MonoBehaviour
     {
         return Mathf.Abs((from.y + to.y) * .5f - center.y) < height && HorizontalSegmentDistance(center, from, to) < radius;
     }
-    string ItemName(int item) { return item == 1 ? "TURBO" : item == 2 ? "ESCUDO" : item == 3 ? "CHOCOLATE" : item == 4 ? "MALVAVISCO" : "VACIO"; }
-    void Notify(string text) { message = text; messageUntil = Time.time + 3; }
+    void UpdateWarning(){
+        proximity="";if(!game.player)return;var player=game.player.transform;
+        foreach(var shot in projectiles){if(!shot||shot.owner==game.player)continue;Vector3 delta=player.position-shot.transform.position;delta.y=0;float along=Vector3.Dot(delta,shot.direction);if(along>0&&along<48&&(delta-shot.direction*along).sqrMagnitude<20){proximity="¡CHOCOLATE EN CAMINO!\nEsquiva o activa tu escudo con E";return;}}
+        foreach(var obstacle in moving)if(Ahead(player,obstacle.position,30)){proximity="¡MALVAVISCO MOVIL CERCA!\nBusca un hueco para pasar";return;}
+        foreach(var trap in traps)if(Ahead(player,trap.position,27)){proximity="¡TRAMPA CERCA!\nEsquiva el charco para no perder velocidad";return;}
+    }
+    static bool Ahead(Transform car,Vector3 point,float distance){Vector3 delta=point-car.position;if(Mathf.Abs(delta.y)>4)return false;delta.y=0;Vector3 forward=Vector3.ProjectOnPlane(car.forward,Vector3.up).normalized;float along=Vector3.Dot(delta,forward);return along>3&&along<distance&&(delta-forward*along).sqrMagnitude<30;}
+    string ItemName(int item) { return item == 1 ? "TURBO DE FRESA" : item == 2 ? "ESCUDO DE CARAMELO" : item == 3 ? "BOLA DE CHOCOLATE" : item == 4 ? "NUBE DE MALVAVISCO" : "SIN PODER"; }
+    void Notify(string text) { message = text; messageUntil = Time.time + 4; }
     void Cue(int cue) { gameObject.SendMessage("CandyCue", cue, SendMessageOptions.DontRequireReceiver); }
 
     void OnDestroy()
