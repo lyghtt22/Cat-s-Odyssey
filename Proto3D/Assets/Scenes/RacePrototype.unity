@@ -24630,6 +24630,16 @@ MonoBehaviour:
   - {x: -277.5001, y: 0.7010656, z: -161.50002}
   - {x: -179.29355, y: 0.4804535, z: -33.5148}
   laps: 3
+  steeringSensitivity: 0.65
+  steeringResponse: 2.2
+  steeringReturn: 3.5
+  acceleration: 0.65
+  maximumSpeedKmh: 100
+  boostSpeedKmh: 125
+  reversePower: 0.5
+  showMinimap: 1
+  playerMapColor: {r: 0, g: 0.72, b: 0.85, a: 1}
+  rivalMapColor: {r: 0.9, g: 0.12, b: 0.35, a: 1}
 --- !u!4 &176018115
 Transform:
   m_ObjectHideFlags: 0

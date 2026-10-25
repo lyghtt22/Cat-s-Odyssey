@@ -9,6 +9,17 @@ public class RacePrototypeGame : MonoBehaviour {
  public Vector3[] route;
  public Vector3[] gates;
  public int laps=3;
+ [Header("Controles arcade - jugador")]
+ [Range(.2f,1f)] public float steeringSensitivity=.65f;
+ [Min(.1f)] public float steeringResponse=2.2f, steeringReturn=3.5f;
+ [Range(.1f,1f)] public float acceleration=.65f;
+ [Min(10)] public float maximumSpeedKmh=100f;
+ [Min(5)] public float boostSpeedKmh=125f;
+ [Range(.1f,1f)] public float reversePower=.5f;
+ [Header("Minimapa de recorrido")]
+ public bool showMinimap=true;
+ public Color playerMapColor=new Color(0,.72f,.85f), rivalMapColor=new Color(.9f,.12f,.35f);
+ float keyboardSteer;
  float countdown=3f, elapsed, boostUntil, boostReady, noticeUntil;
  string notice="";
  int[] next={1,1}, completed={0,0};
@@ -20,6 +31,11 @@ public class RacePrototypeGame : MonoBehaviour {
  TrailRenderer[] trails;
  GUIStyle label, big, small;
  void Start(){
+  // El gestor es el unico propietario del input en esta escena.
+  foreach(var car in new[]{player,rival}) if(car){
+   var user=car.GetComponent<CarUserControl>();if(user)user.enabled=false;
+   var ai=car.GetComponent<CarAIControl>();if(ai)ai.enabled=false;
+  }
   cars=new[]{player,rival}; bodies=new[]{player.GetComponent<Rigidbody>(),rival.GetComponent<Rigidbody>()};
   trails=new TrailRenderer[2];
   for(int i=0;i<2;i++){
@@ -49,14 +65,25 @@ public class RacePrototypeGame : MonoBehaviour {
     steer=Mathf.Clamp(angle/27f,-1,1);
     if(i==0)steer=Mathf.Clamp(Mathf.Atan2(5f*local.x,local.x*local.x+local.z*local.z)*Mathf.Rad2Deg/30f,-1,1); float desired=23;desired-=Mathf.Clamp(Mathf.Abs(angle)*.18f,0,10);
     throttle=rb.velocity.magnitude<desired?1f:-.25f;
-   }else{steer=Input.GetAxis("Horizontal");throttle=Input.GetAxis("Vertical");}
+   }else{
+    float horizontal=(Input.GetKey(KeyCode.RightArrow)||Input.GetKey(KeyCode.D)?1:0)-(Input.GetKey(KeyCode.LeftArrow)||Input.GetKey(KeyCode.A)?1:0);
+    float vertical=(Input.GetKey(KeyCode.UpArrow)||Input.GetKey(KeyCode.W)?1:0)-(Input.GetKey(KeyCode.DownArrow)||Input.GetKey(KeyCode.S)?1:0);
+    keyboardSteer=Mathf.MoveTowards(keyboardSteer,horizontal*steeringSensitivity,(horizontal==0?steeringReturn:steeringResponse)*Time.fixedDeltaTime);
+    steer=keyboardSteer;
+    // Abajo frena a plena potencia; la reversa usa menos fuerza.
+    bool movingForward=Vector3.Dot(rb.velocity,car.transform.forward)>1.4f;
+    throttle=vertical>0?acceleration:vertical<0?(movingForward?-1:-reversePower):0;
+    float limit=Time.time<boostUntil?boostSpeedKmh:maximumSpeedKmh;
+    if(rb.velocity.magnitude*3.6f>=limit&&throttle>0)throttle=0;
+    if(rb.velocity.magnitude*3.6f>limit)rb.velocity=Vector3.MoveTowards(rb.velocity,rb.velocity.normalized*limit/3.6f,5f*Time.fixedDeltaTime);
+   }
    car.Move(steer,Mathf.Max(0,throttle),Mathf.Min(0,throttle),i==0&&!demo&&Input.GetKey(KeyCode.Space)?1:0);
    if(i==0){
     Vector3 p=car.transform.position;
     bool pad=p.x>35&&p.x<49&&Mathf.Abs(p.z+29)<8;
-    if((pad||(!demo&&Input.GetKey(KeyCode.LeftShift)))&&Time.time>boostReady){boostUntil=Time.time+2.5f;boostReady=Time.time+7;Message("TURBO +++");Debug.Log("RACE BOOST speed="+rb.velocity.magnitude*3.6f);}
+    if((pad||(!demo&&Input.GetKey(KeyCode.F)))&&Time.time>boostReady){boostUntil=Time.time+2.5f;boostReady=Time.time+7;Message("TURBO +++");Debug.Log("RACE BOOST speed="+rb.velocity.magnitude*3.6f);}
     bool boost=Time.time<boostUntil;trails[0].emitting=boost;
-    if(boost&&rb.velocity.magnitude<(demo?28:39))rb.AddForce(car.transform.forward*(demo?4:12),ForceMode.Acceleration);
+    if(boost&&rb.velocity.magnitude<(demo?28:boostSpeedKmh/3.6f))rb.AddForce(car.transform.forward*(demo?4:6),ForceMode.Acceleration);
    }
    Vector3 now=car.transform.position; Vector3 g=gates[next[i]]; Vector3 dir=(route[(GateRouteIndex(next[i])+1)%route.Length]-g).normalized;
    float a=Vector3.Dot(previous[i]-g,dir),b=Vector3.Dot(now-g,dir);
@@ -98,14 +125,46 @@ public class RacePrototypeGame : MonoBehaviour {
   string center=countdown>0?Mathf.CeilToInt(countdown).ToString():countdown>-1?"¡YA!":finished?"¡META!":"";
   if(center!=""){Panel(new Rect(420,236,440,150),new Color(.75f,.2f,.42f,.8f));GUI.Label(new Rect(420,236,440,150),center,big);}
   if(Time.time<noticeUntil&&!finished){Panel(new Rect(435,161,410,42),new Color(1,.95f,.88f,.95f));GUI.Label(new Rect(452,166,400,35),notice,label);}
-  Panel(new Rect(27,656,827,39),new Color(1,.95f,.88f,.93f));GUI.Label(new Rect(42,664,810,27),"WASD conducir   ·   ESPACIO frenar   ·   SHIFT turbo   ·   R recuperar   ·   F2 demo",small);
+  if(showMinimap)DrawMinimap();
+  Panel(new Rect(27,656,917,39),new Color(1,.95f,.88f,.93f));GUI.Label(new Rect(42,664,900,27),"FLECHAS / WASD conducir  ·  ESPACIO freno mano  ·  F turbo  ·  R recuperar  ·  F2 demo",small);
   Panel(new Rect(972,607,282,89),new Color(1,.95f,.88f,.96f));
-  GUI.Label(new Rect(992,618,250,30),Time.time<boostUntil?"¡SUGAR BOOST!":Time.time<boostReady?"RECARGANDO AZUCAR":"SUGAR BOOST  /  SHIFT",small);
+  GUI.Label(new Rect(992,618,250,30),Time.time<boostUntil?"¡SUGAR BOOST!":Time.time<boostReady?"RECARGANDO AZUCAR":"SUGAR BOOST  /  F",small);
   float fill=Time.time<boostUntil?(boostUntil-Time.time)/2.5f:Mathf.Clamp01(1-(boostReady-Time.time)/7);
   Panel(new Rect(992,660,242,12),new Color(.87f,.8f,.79f));Panel(new Rect(992,660,Mathf.Max(4,242*fill),12),new Color(1,.39f,.64f));
   if(finished){Panel(new Rect(390,405,500,110),new Color(1,.95f,.88f,.97f));GUI.Label(new Rect(420,419,480,38),"Tiempo final: "+TimeSpan.FromSeconds(elapsed).ToString(@"mm\:ss\.ff"),label);GUI.Label(new Rect(420,463,480,35),"ENTER  /  volver a correr",label);}
  }
  Texture2D round;
+ void DrawMinimap(){
+  if(route==null||route.Length<2)return;
+  Panel(new Rect(1010,166,244,214),new Color(1,.95f,.88f,.96f));
+  GUI.Label(new Rect(1026,174,220,25),"RECORRIDO",small);
+  float minX=float.MaxValue,maxX=float.MinValue,minZ=float.MaxValue,maxZ=float.MinValue;
+  foreach(var p in route){minX=Mathf.Min(minX,p.x);maxX=Mathf.Max(maxX,p.x);minZ=Mathf.Min(minZ,p.z);maxZ=Mathf.Max(maxZ,p.z);}
+  Rect area=new Rect(1029,209,206,128);
+  float scale=Mathf.Min((area.width-20)/Mathf.Max(1,maxX-minX),(area.height-20)/Mathf.Max(1,maxZ-minZ));
+  Vector2 center=new Vector2((minX+maxX)/2,(minZ+maxZ)/2);
+  for(int i=0;i<route.Length;i++){
+   Vector2 a=MapPoint(route[i],area,center,scale),b=MapPoint(route[(i+1)%route.Length],area,center,scale);
+   MapLine(a,b,9,new Color(.4f,.28f,.36f));MapLine(a,b,5,new Color(.85f,.74f,.8f));
+  }
+  Vector2 start=MapPoint(route[0],area,center,scale);MapLine(start+Vector2.up*7,start-Vector2.up*7,3,Color.white);
+  // Posiciones reales, no progreso estimado: tambien refleja reversa y salidas de pista.
+  if(rival)MapMarker(MapPoint(rival.transform.position,area,center,scale),rivalMapColor,false);
+  if(player)MapMarker(MapPoint(player.transform.position,area,center,scale),playerMapColor,true);
+  MapMarker(new Vector2(1033,359),playerMapColor,true);GUI.Label(new Rect(1045,347,80,25),"TU",small);
+  MapMarker(new Vector2(1135,359),rivalMapColor,false);GUI.Label(new Rect(1147,347,100,25),rival?"RIVAL":"SIN RIVAL",small);
+ }
+ Vector2 MapPoint(Vector3 p,Rect area,Vector2 center,float scale){return area.center+new Vector2((p.x-center.x)*scale,-(p.z-center.y)*scale);}
+ void MapLine(Vector2 a,Vector2 b,float width,Color color){
+  Matrix4x4 old=GUI.matrix;GUI.matrix=old*Matrix4x4.TRS(new Vector3(a.x,a.y,0),Quaternion.Euler(0,0,Mathf.Atan2(b.y-a.y,b.x-a.x)*Mathf.Rad2Deg),Vector3.one);
+  GUI.color=color;GUI.DrawTexture(new Rect(0,-width/2,Vector2.Distance(a,b),width),Texture2D.whiteTexture);GUI.color=Color.white;GUI.matrix=old;
+ }
+ void MapMarker(Vector2 p,Color color,bool isPlayer){
+  // Distintas formas ademas del color: jugador rombo, rival cuadrado.
+  Matrix4x4 old=GUI.matrix;GUI.matrix=old*Matrix4x4.TRS(new Vector3(p.x,p.y,0),Quaternion.Euler(0,0,isPlayer?45:0),Vector3.one);
+  GUI.color=new Color(.2f,.12f,.2f);GUI.DrawTexture(new Rect(-6,-6,12,12),Texture2D.whiteTexture);
+  GUI.color=color;GUI.DrawTexture(new Rect(-4,-4,8,8),Texture2D.whiteTexture);GUI.color=Color.white;GUI.matrix=old;
+ }
  void Panel(Rect rect,Color c){GUI.color=c;GUI.DrawTexture(rect,round);GUI.color=Color.white;}
 }
 
