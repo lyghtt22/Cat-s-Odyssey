@@ -1,0 +1,10 @@
+track=0
+finalTime=196.9267
+position=1
+laps=3,2,2,2
+frames=11591
+frameSeconds=197.1947
+worstFrame=0.4323461
+maxGroundError=5.736947E-07
+minimumUpright=1
+errors=

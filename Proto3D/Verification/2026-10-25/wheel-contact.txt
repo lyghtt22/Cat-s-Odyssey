@@ -1,0 +1,3 @@
+Wheel visual clearance=0.01499914
+maxGroundError=6.109476E-07
+minimumUpright=1

@@ -1,0 +1,17 @@
+PASS Karts remain grounded
+PASS Three completed laps
+PASS Forward gate
+PASS Reverse rejected
+PASS Far gate rejected
+PASS Restart cleared laps
+PASS Countdown restored
+PASS Box boost
+PASS Shield single hit
+PASS Chocolate projectile
+PASS Slow does not stack
+PASS Pause freezes time
+PASS Resume restores time
+PASS Camera 0 finite
+PASS Camera 1 finite
+PASS Camera 2 finite
+PASS Projectiles cleared
