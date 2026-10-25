@@ -4,16 +4,16 @@ using UnityEditor.SceneManagement;
 using UnityStandardAssets.Vehicles.Car;
 using System.Collections.Generic;
 using System.IO;
-[InitializeOnLoad] public static class RacePrototypeSetup {
- static RacePrototypeSetup(){EditorApplication.delayCall+=BuildOnce;}
+ public static class RacePrototypeSetup {
+
  [MenuItem("Race Prototype/Preparar avance")]
  static void BuildOnce(){
   if(EditorApplication.isPlayingOrWillChangePlaymode)return;
   var scene=EditorSceneManager.GetActiveScene();
   if(scene.path!="Assets/Scenes/RacePrototype.unity"||GameObject.Find("RacePrototype - Race Manager"))return;
-  string output=@"C:\Users\lyght\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an-3\outputs";
+  string output=Path.GetFullPath(Path.Combine(Application.dataPath,"../Temp/RaceBackups"));
   Directory.CreateDirectory(output);
-  File.Copy(scene.path,Path.Combine(output,"RacePrototype-before.unity"),false);
+  File.Copy(scene.path,Path.Combine(output,"RacePrototype-before-"+System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+".unity"),false);
   var player=GameObject.Find("Car").GetComponent<CarController>();
   foreach(var root in scene.GetRootGameObjects())if(root.name.Contains("CameraRig")||root.name=="LimitFloor")root.SetActive(false);
   Directory.CreateDirectory("Assets/RacePrototype/Materials"); Configure(player);
@@ -54,4 +54,3 @@ using System.IO;
   var so=new SerializedObject(car);so.FindProperty("m_Topspeed").floatValue=160;so.FindProperty("m_SpeedType").enumValueIndex=1;so.FindProperty("m_MaximumSteerAngle").floatValue=30;so.FindProperty("m_FullTorqueOverAllWheels").floatValue=3000;so.FindProperty("m_TractionControl").floatValue=.1f;so.FindProperty("m_SteerHelper").floatValue=.8f;so.FindProperty("m_CentreOfMassOffset").vector3Value=new Vector3(0,-.4f,0);so.ApplyModifiedPropertiesWithoutUndo();var rb=car.GetComponent<Rigidbody>();rb.interpolation=RigidbodyInterpolation.Interpolate;rb.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
  }
 }
-

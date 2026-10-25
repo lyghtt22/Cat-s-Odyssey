@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityStandardAssets.Vehicles.Car;
-[InitializeOnLoad] public static class SugarBloomFinalize {
- static SugarBloomFinalize(){EditorApplication.delayCall+=Run;}
+ public static class SugarBloomFinalize {
+
  static void Run(){
   if(GameObject.Find("Sugar Bloom - Persistent Setup"))return;
   if(EditorApplication.isPlayingOrWillChangePlaymode){if(EditorApplication.isPlaying)EditorApplication.isPlaying=false;EditorApplication.delayCall+=Run;return;}

@@ -4,11 +4,11 @@ using UnityEditor.SceneManagement;
 using UnityStandardAssets.Vehicles.Car;
 using System.IO;
 using System.Collections.Generic;
-[InitializeOnLoad] public static class SugarBloomArt {
+ public static class SugarBloomArt {
  static Color pink=new Color(1,.43f,.67f),mint=new Color(.42f,.85f,.74f),vanilla=new Color(1,.9f,.72f),chocolate=new Color(.29f,.12f,.1f),berry=new Color(.65f,.18f,.4f);
  static Material frosting,cream,cocoa,peppermint,wafer,raspberry,glass;
  static Transform art; static int num;
- static SugarBloomArt(){EditorApplication.delayCall+=Apply;}
+
  static void Apply(){ if(GameObject.Find("Sugar Bloom - Ready"))return;
   if(EditorApplication.isCompiling||EditorApplication.isUpdating){EditorApplication.delayCall+=Apply;return;}
   if(EditorApplication.isPlayingOrWillChangePlaymode){if(EditorApplication.isPlaying)EditorApplication.isPlaying=false;EditorApplication.delayCall+=Apply;return;}
@@ -113,5 +113,3 @@ using System.Collections.Generic;
  }
  static void trGoSave(GameObject go,RacePrototypeGame game){var prefab=PrefabUtility.SaveAsPrefabAsset(go,"Assets/RacePrototype/CandyArt/CandySkid.prefab");Object.DestroyImmediate(go);foreach(var car in new[]{game.player,game.rival})foreach(var effect in car.GetComponentsInChildren<WheelEffects>())effect.SkidTrailPrefab=prefab.transform;}
 }
-
-

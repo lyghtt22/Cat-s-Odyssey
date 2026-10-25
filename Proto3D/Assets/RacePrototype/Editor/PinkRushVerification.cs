@@ -2,11 +2,11 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Reflection;
-[InitializeOnLoad] public static class PinkRushVerification {
- static string root=@"C:\Users\lyght\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an-3\outputs";
+ public static class PinkRushVerification {
+ static string root=Path.GetFullPath(Path.Combine(Application.dataPath,"../Temp/LegacyRaceVerification"));
  static bool preview; static double ended;static float maxSpeed;static bool boost;static int maxCheckpoint;
  static BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
- static PinkRushVerification(){EditorApplication.update+=Tick;}
+
  static void Tick(){
   if(!File.Exists(Path.Combine(root,"verify-request.txt")))return;
   if(EditorApplication.isCompiling||EditorApplication.isUpdating)return;
@@ -33,5 +33,3 @@ using System.Reflection;
  }
  [System.Serializable] class Report{public bool finished;public int playerLaps,rivalLaps;public float maxKmh,timeSeconds;public bool boostActivated;public int maxCheckpoint;}
 }
-
-

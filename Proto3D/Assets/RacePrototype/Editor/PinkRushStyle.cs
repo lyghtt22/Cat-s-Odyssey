@@ -3,10 +3,10 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.IO;
 using System.Collections.Generic;
-[InitializeOnLoad] public static class PinkRushStyle {
+ public static class PinkRushStyle {
  static Color rose=new Color(1,.32f,.62f), blush=new Color(1,.79f,.88f), cream=new Color(1,.94f,.86f), lavender=new Color(.66f,.5f,.72f);
  static int id;static Dictionary<Material,Material> styled=new Dictionary<Material,Material>();
- static PinkRushStyle(){EditorApplication.delayCall+=Apply;}
+
  [MenuItem("Race Prototype/Aplicar estilo rosita")]
  static void Apply(){
   if(EditorApplication.isPlayingOrWillChangePlaymode)return;
