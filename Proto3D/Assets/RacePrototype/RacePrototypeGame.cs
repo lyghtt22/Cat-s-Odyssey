@@ -23,7 +23,7 @@ public class RacePrototypeGame : MonoBehaviour {
  string notice="";
  int[] next,completed; bool finished,demo,paused;
  int initializedFrame,cameraMode,finalPosition;
- float[] finishTimes,boosts,stuck,speeds; Vector3[] arcadeVelocity;
+ float[] finishTimes,boosts,stuck,speeds,rideOffsets; Vector3[] arcadeVelocity;
  Vector3[] previous,spawnPositions,originalRoute,originalGates;
  Quaternion[] spawnRotations;
  Rigidbody[] bodies;CarController[] cars;TrailRenderer[] trails;WheelCollider[][] wheels;
@@ -38,12 +38,13 @@ public class RacePrototypeGame : MonoBehaviour {
   extraA.name="CPU - Vanilla";extraB.name="CPU - Cocoa";
   cars=new[]{player,rival,extraA,extraB};int count=cars.Length;
   bodies=new Rigidbody[count];next=new int[count];completed=new int[count];previous=new Vector3[count];stuck=new float[count];
-  speeds=new float[count];arcadeVelocity=new Vector3[count];trails=new TrailRenderer[count];finishTimes=new float[count];boosts=new float[count];spawnPositions=new Vector3[count];spawnRotations=new Quaternion[count];wheels=new WheelCollider[count][];
+  rideOffsets=new float[count];speeds=new float[count];arcadeVelocity=new Vector3[count];trails=new TrailRenderer[count];finishTimes=new float[count];boosts=new float[count];spawnPositions=new Vector3[count];spawnRotations=new Quaternion[count];wheels=new WheelCollider[count][];
   for(int i=0;i<count;i++){
    var user=cars[i].GetComponent<CarUserControl>();if(user)user.enabled=false;
    var ai=cars[i].GetComponent<CarAIControl>();if(ai)ai.enabled=false;
    bodies[i]=cars[i].GetComponent<Rigidbody>();if(!bodies[i]){Debug.LogError("RACE CONFIG ERROR: falta Rigidbody");enabled=false;return;}
    bodies[i].isKinematic=true;cars[i].enabled=false; foreach(var component in cars[i].GetComponentsInChildren<MonoBehaviour>())if(component.GetType().Name=="CarAudio"||component.GetType().Name=="WheelEffects")component.enabled=false;
+   float lowestWheel=float.MaxValue;foreach(var renderer in cars[i].GetComponentsInChildren<Renderer>())if(renderer.enabled&&renderer.name=="Chocolate cookie tire")lowestWheel=Mathf.Min(lowestWheel,renderer.bounds.min.y);rideOffsets[i]=lowestWheel<float.MaxValue?bodies[i].position.y-lowestWheel+.015f:.1f;
    bodies[i].maxAngularVelocity=3;
    wheels[i]=cars[i].GetComponentsInChildren<WheelCollider>();foreach(var wheel in wheels[i])wheel.enabled=false;
    var go=new GameObject("Sugar turbo trail");go.transform.SetParent(cars[i].transform,false);go.transform.localPosition=new Vector3(0,.55f,-2);
@@ -56,7 +57,7 @@ public class RacePrototypeGame : MonoBehaviour {
  }
  void SetGrid(){
   Vector3 forward=route[1]-route[0];forward.y=0;forward.Normalize();Vector3 right=Vector3.Cross(Vector3.up,forward);
-  for(int i=0;i<cars.Length;i++){spawnPositions[i]=route[0]-forward*(14+(i/2)*9)+right*((i%2==0?-1:1)*3)+Vector3.up*.1f;spawnRotations[i]=Quaternion.LookRotation(forward);}
+  for(int i=0;i<cars.Length;i++){spawnPositions[i]=route[0]-forward*(14+(i/2)*9)+right*((i%2==0?-1:1)*3)+Vector3.up*rideOffsets[i];spawnRotations[i]=Quaternion.LookRotation(forward);}
  }
  void SelectRace(int track,int vehicle){
   route=track==0?(Vector3[])originalRoute.Clone():fantasy.Route;gates=track==0?(Vector3[])originalGates.Clone():fantasy.Gates;
@@ -90,7 +91,7 @@ public class RacePrototypeGame : MonoBehaviour {
   if(cars==null||paused||InMenu||Time.frameCount<=initializedFrame+1)return;
   for(int i=0;i<cars.Length;i++){
    if(countdown>0||completed[i]>=laps){speeds[i]=0;arcadeVelocity[i]=Vector3.zero;trails[i].emitting=false;continue;}
-   var car=cars[i];var rb=bodies[i];maxGroundError=Mathf.Max(maxGroundError,Mathf.Abs(rb.position.y-ClosestRoad(rb.position).y-.1f));minimumUpright=Mathf.Min(minimumUpright,Vector3.Dot(car.transform.up,Vector3.up));float speed=Mathf.Abs(speeds[i]);Quaternion rotation=rb.rotation;
+   var car=cars[i];var rb=bodies[i];maxGroundError=Mathf.Max(maxGroundError,Mathf.Abs(rb.position.y-ClosestRoad(rb.position).y-rideOffsets[i]));minimumUpright=Mathf.Min(minimumUpright,Vector3.Dot(car.transform.up,Vector3.up));float speed=Mathf.Abs(speeds[i]);Quaternion rotation=rb.rotation;
    bool automatic=i>0||demo;
    if(automatic){
     int target=Nearest(rb.position);float distance=0;int attempts=0;
@@ -123,7 +124,7 @@ public class RacePrototypeGame : MonoBehaviour {
    // Karts follow the road surface; impacts cannot launch or roll them.
    Vector3 center=ClosestRoad(candidate);Vector3 offset=candidate-center;offset.y=0;
    if(offset.magnitude>11.5f){candidate=center+offset.normalized*11.5f;speeds[i]*=.96f;if(i==0&&!demo)Message("BORDE DE PISTA / reduce el giro");}
-   candidate.y=center.y+.1f;
+   candidate.y=center.y+rideOffsets[i];
    for(int other=0;other<cars.Length;other++)if(other!=i&&completed[other]<laps){Vector3 gap=bodies[other].position-rb.position;gap.y=0;Vector3 nextGap=bodies[other].position-candidate;nextGap.y=0;if(nextGap.sqrMagnitude<9&&Vector3.Dot(gap,forward)*Mathf.Sign(speeds[i])>0&&nextGap.sqrMagnitude<gap.sqrMagnitude){candidate=rb.position;speeds[i]=0;break;}}
    arcadeVelocity[i]=(candidate-rb.position)/Time.fixedDeltaTime;rb.MovePosition(candidate);rb.MoveRotation(rotation);trails[i].emitting=Time.time<boosts[i];
    if(i==0){bool pad=presentation.SelectedTrack==0&&candidate.x>35&&candidate.x<49&&Mathf.Abs(candidate.z+29)<8;if((pad||(!demo&&Input.GetKey(KeyCode.F)))&&Time.time>boostReady){ActivateBoost(0,2.5f);boostReady=Time.time+7;}}
@@ -137,7 +138,7 @@ public class RacePrototypeGame : MonoBehaviour {
   }
  }
  Vector3 ClosestRoad(Vector3 point){float best=float.MaxValue;Vector3 closest=route[0];for(int j=0;j<route.Length;j++){Vector3 a=route[j],b=route[(j+1)%route.Length],d=b-a;Vector3 horizontal=d;horizontal.y=0;Vector3 offset=point-a;offset.y=0;float fraction=horizontal.sqrMagnitude>.001f?Mathf.Clamp01(Vector3.Dot(offset,horizontal)/horizontal.sqrMagnitude):0;Vector3 candidate=Vector3.Lerp(a,b,fraction);offset=point-candidate;offset.y=0;if(offset.sqrMagnitude<best){best=offset.sqrMagnitude;closest=candidate;}}return closest;}
- void ParkRival(int i){Vector3 forward=(route[1]-route[0]).normalized;Vector3 right=Vector3.Cross(Vector3.up,forward);bodies[i].position=route[0]+forward*(25+i*7)+right*10+Vector3.up*.1f;speeds[i]=0;arcadeVelocity[i]=Vector3.zero;}
+ void ParkRival(int i){Vector3 forward=(route[1]-route[0]).normalized;Vector3 right=Vector3.Cross(Vector3.up,forward);bodies[i].position=route[0]+forward*(25+i*7)+right*10+Vector3.up*rideOffsets[i];speeds[i]=0;arcadeVelocity[i]=Vector3.zero;}
 
  int GateRouteIndex(int gate){return Nearest(gates[gate]);}
  public static bool CrossedGate(Vector3 from,Vector3 to,Vector3 gate,Vector3 direction){direction.y=0;if(direction.sqrMagnitude<.0001f)return false;direction.Normalize();float a=Vector3.Dot(from-gate,direction),b=Vector3.Dot(to-gate,direction);if(a>0||b<=0)return false;Vector3 crossing=Vector3.Lerp(from,to,-a/(b-a));Vector3 off=crossing-gate;off.y=0;off-=direction*Vector3.Dot(off,direction);return off.magnitude<13&&Mathf.Abs(crossing.y-gate.y)<8;}
@@ -146,7 +147,7 @@ public class RacePrototypeGame : MonoBehaviour {
  int Nearest(Vector3 p){int best=0;float d=float.MaxValue;for(int j=0;j<route.Length;j++){float n=(p-route[j]).sqrMagnitude;if(n<d){d=n;best=j;}}return best;}
  void ResetRace(){maxGroundError=0;minimumUpright=1;observedFrames=0;observedFrameTime=worstFrame=0;paused=false;countdown=3;elapsed=0;finalTime=0;finalPosition=0;keyboardSteer=0;notice="";noticeUntil=0;finished=false;boostUntil=boostReady=0;for(int i=0;i<cars.Length;i++){completed[i]=0;finishTimes[i]=-1;next[i]=1;stuck[i]=0;boosts[i]=0;trails[i].emitting=false;trails[i].Clear();bodies[i].position=spawnPositions[i];bodies[i].rotation=spawnRotations[i];speeds[i]=0;arcadeVelocity[i]=Vector3.zero;previous[i]=bodies[i].position;}if(items)items.ResetItems();}
  void Restart(){ResetRace();Time.timeScale=1;Debug.Log("RACE RESTART");}
- void Recover(int i){int prev=(next[i]+gates.Length-1)%gates.Length;int k=GateRouteIndex(prev);var dir=(route[(k+1)%route.Length]-route[k]).normalized;bodies[i].position=route[k]+Vector3.up*.1f;bodies[i].rotation=Quaternion.LookRotation(dir);speeds[i]=0;arcadeVelocity[i]=Vector3.zero;previous[i]=bodies[i].position;stuck[i]=0;if(i==0)Message("AUTO RECUPERADO");}
+ void Recover(int i){int prev=(next[i]+gates.Length-1)%gates.Length;int k=GateRouteIndex(prev);var dir=(route[(k+1)%route.Length]-route[k]).normalized;bodies[i].position=route[k]+Vector3.up*rideOffsets[i];bodies[i].rotation=Quaternion.LookRotation(dir);speeds[i]=0;arcadeVelocity[i]=Vector3.zero;previous[i]=bodies[i].position;stuck[i]=0;if(i==0)Message("AUTO RECUPERADO");}
  void Message(string text){notice=text;noticeUntil=Time.time+2.5f;}
  void LateUpdate(){
   if(!player||!chase||InMenu)return;

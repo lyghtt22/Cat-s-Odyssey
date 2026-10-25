@@ -9,7 +9,7 @@ using System.Text;
  static readonly BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public;
  static readonly string root=Path.GetFullPath(Path.Combine(Application.dataPath,".."));
  static readonly string request=Path.Combine(root,"Temp/RaceVerification.request");
- static double next,finishAt;static int initialized=-1,shotStage;static string errors="";
+ static bool contactCaptured;static double next,finishAt;static int initialized=-1,shotStage;static string errors="";
  static RaceVerification(){EditorApplication.update+=Tick;Application.logMessageReceived+=Log;}
  static void Log(string message,string trace,LogType type){if(SessionState.GetBool("RaceVerification.active",false)&&(type==LogType.Error||type==LogType.Exception||type==LogType.Assert))errors+=message+"\n"+trace+"\n";}
  static object Get(object obj,string name){return obj.GetType().GetField(name,flags).GetValue(obj);}
@@ -20,9 +20,9 @@ using System.Text;
   try{
    if(EditorApplication.isCompiling||EditorApplication.isUpdating)return;
    if(File.Exists(request)){
-    string[] command=File.ReadAllText(request).Trim().Split('|');File.Delete(request);
+    string[] command;try{string input=File.ReadAllText(request).Trim();if(input.Length==0)return;command=input.Split('|');}catch(IOException){return;}File.Delete(request);
     if(command[0]=="stop"){SessionState.SetBool("RaceVerification.active",false);EditorApplication.isPlaying=false;return;}
-    if(command[0]=="start"){
+    if(command[0]=="start"||command[0]=="preview"){SessionState.SetBool("RaceVerification.preview",command[0]=="preview");
      SessionState.SetBool("RaceVerification.active",true);SessionState.SetInt("RaceVerification.track",command.Length>1?int.Parse(command[1]):0);
      if(command.Length>2)SessionState.SetString("RaceVerification.output",command[2]);
      initialized=-1;shotStage=0;finishAt=0;errors="";EditorApplication.isPaused=false;if(!EditorApplication.isPlaying)EditorApplication.isPlaying=true;
@@ -31,10 +31,12 @@ using System.Text;
    if(!SessionState.GetBool("RaceVerification.active",false)||!EditorApplication.isPlaying)return;
    var game=UnityEngine.Object.FindObjectOfType<RacePrototypeGame>();if(!game||game.Racers==null||!game.Presentation||!game.GetComponent<RaceCandyItems>())return;
    Directory.CreateDirectory(Output);int track=SessionState.GetInt("RaceVerification.track",0);
-   if(initialized!=track){game.Presentation.OpenMenu();typeof(RacePresentation).GetProperty("SelectedTrack").SetValue(game.Presentation,track,null);game.Presentation.StartSelection();Set(game,"demo",true);initialized=track;next=0;shotStage=0;finishAt=0;errors="";}
+   if(initialized!=track){game.Presentation.OpenMenu();if(SessionState.GetBool("RaceVerification.preview",false)){typeof(RacePresentation).GetProperty("SelectedVehicle").SetValue(game.Presentation,1,null);typeof(RacePresentation).GetProperty("SelectedCharacter").SetValue(game.Presentation,1,null);}typeof(RacePresentation).GetProperty("SelectedTrack").SetValue(game.Presentation,track,null);game.Presentation.StartSelection();Set(game,"demo",true);initialized=track;contactCaptured=false;next=0;shotStage=0;finishAt=0;errors="";}
    float elapsed=(float)Get(game,"elapsed");bool finished=(bool)Get(game,"finished");
    if(EditorApplication.timeSinceStartup>=next){next=EditorApplication.timeSinceStartup+5;File.AppendAllText(Path.Combine(Output,"runtime-track-"+track+".txt"),DateTime.UtcNow.ToString("o")+" elapsed="+elapsed+" completed="+string.Join(",",(int[])Get(game,"completed"))+" next="+string.Join(",",(int[])Get(game,"next"))+" finished="+finished+" pos="+game.player.transform.position+Environment.NewLine);}
    if(shotStage<3&&!finished){if(elapsed>8+shotStage*10)Set(game,"cameraMode",shotStage);if(elapsed>10+shotStage*10){ScreenCapture.CaptureScreenshot(Path.Combine(Output,"track-"+track+"-camera-"+shotStage+".png"));shotStage++;}}
+   if(SessionState.GetBool("RaceVerification.preview",false)&&elapsed>30){Set(game,"cameraMode",0);if(elapsed>32&&!contactCaptured){contactCaptured=true;ScreenCapture.CaptureScreenshot(Path.Combine(Output,"contacto-ruedas.png"));}}
+   if(SessionState.GetBool("RaceVerification.preview",false)&&elapsed>33){Set(game,"cameraMode",0);float gap=100;foreach(var renderer in game.player.GetComponentsInChildren<Renderer>())if(renderer.enabled&&renderer.name=="Chocolate cookie tire")gap=Mathf.Min(gap,renderer.bounds.min.y-game.player.transform.position.y+((float[])Get(game,"rideOffsets"))[0]);File.WriteAllText(Path.Combine(Output,"wheel-contact.txt"),"Wheel visual clearance="+gap+"\nmaxGroundError="+Get(game,"maxGroundError")+"\nminimumUpright="+Get(game,"minimumUpright"));SessionState.SetBool("RaceVerification.active",false);Call(game,"OpenMenu");ScreenCapture.CaptureScreenshot(Path.Combine(Output,"menu-final.png"));return;}
    if(finished&&finishAt==0){finishAt=EditorApplication.timeSinceStartup;ScreenCapture.CaptureScreenshot(Path.Combine(Output,"track-"+track+"-finish.png"));
     string result="track="+track+"\nfinalTime="+Get(game,"finalTime")+"\nposition="+Get(game,"finalPosition")+"\nlaps="+string.Join(",",(int[])Get(game,"completed"))+"\nframes="+Get(game,"observedFrames")+"\nframeSeconds="+Get(game,"observedFrameTime")+"\nworstFrame="+Get(game,"worstFrame")+"\nmaxGroundError="+Get(game,"maxGroundError")+"\nminimumUpright="+Get(game,"minimumUpright")+"\nerrors="+errors;
     File.WriteAllText(Path.Combine(Output,"test-track-"+track+".txt"),result);
