@@ -38,7 +38,7 @@ using System.Text;
    if(SessionState.GetBool("RaceVerification.preview",false)&&elapsed>30){Set(game,"cameraMode",0);if(elapsed>32&&!contactCaptured){contactCaptured=true;ScreenCapture.CaptureScreenshot(Path.Combine(Output,"contacto-ruedas.png"));}}
    if(SessionState.GetBool("RaceVerification.preview",false)&&elapsed>33){Set(game,"cameraMode",0);float gap=100;foreach(var renderer in game.player.GetComponentsInChildren<Renderer>())if(renderer.enabled&&renderer.name=="Chocolate cookie tire")gap=Mathf.Min(gap,renderer.bounds.min.y-game.player.transform.position.y+((float[])Get(game,"rideOffsets"))[0]);File.WriteAllText(Path.Combine(Output,"wheel-contact.txt"),"Wheel visual clearance="+gap+"\nmaxGroundError="+Get(game,"maxGroundError")+"\nminimumUpright="+Get(game,"minimumUpright"));SessionState.SetBool("RaceVerification.active",false);Call(game,"OpenMenu");ScreenCapture.CaptureScreenshot(Path.Combine(Output,"menu-final.png"));return;}
    if(finished&&finishAt==0){finishAt=EditorApplication.timeSinceStartup;ScreenCapture.CaptureScreenshot(Path.Combine(Output,"track-"+track+"-finish.png"));
-    string result="track="+track+"\nfinalTime="+Get(game,"finalTime")+"\nposition="+Get(game,"finalPosition")+"\nlaps="+string.Join(",",(int[])Get(game,"completed"))+"\nframes="+Get(game,"observedFrames")+"\nframeSeconds="+Get(game,"observedFrameTime")+"\nworstFrame="+Get(game,"worstFrame")+"\nmaxGroundError="+Get(game,"maxGroundError")+"\nminimumUpright="+Get(game,"minimumUpright")+"\nerrors="+errors;
+    string result="track="+track+"\nfinalTime="+Get(game,"finalTime")+"\nposition="+Get(game,"finalPosition")+"\nlaps="+string.Join(",",(int[])Get(game,"completed"))+"\nframes="+Get(game,"observedFrames")+"\nframeSeconds="+Get(game,"observedFrameTime")+"\nworstFrame="+Get(game,"worstFrame")+"\nmaxGroundError="+Get(game,"maxGroundError")+"\nminimumUpright="+Get(game,"minimumUpright")+"\nminimumCameraClearance="+Get(game,"minimumCameraClearance")+"\nerrors="+errors;
     File.WriteAllText(Path.Combine(Output,"test-track-"+track+".txt"),result);
    }
    if(finishAt>0&&EditorApplication.timeSinceStartup-finishAt>3){RunSmoke(game,track);if(track==0){SessionState.SetInt("RaceVerification.track",1);initialized=-1;}else{SessionState.SetBool("RaceVerification.active",false);Call(game,"OpenMenu");ScreenCapture.CaptureScreenshot(Path.Combine(Output,"menu-final.png"));}}
@@ -48,7 +48,8 @@ using System.Text;
  static void RunSmoke(RacePrototypeGame game,int track){
   var log=new StringBuilder();Action<string,bool> check=(name,ok)=>{log.AppendLine((ok?"PASS ":"FAIL ")+name);if(!ok)throw new Exception(name);};
   try{
-   check("Karts remain grounded",(float)Get(game,"maxGroundError")<.4f&&(float)Get(game,"minimumUpright")>.99f);
+   check("Karts remain grounded",(float)Get(game,"maxGroundError")<.03f&&(float)Get(game,"minimumUpright")>.85f);
+   check("Camera stays above physical asphalt",(float)Get(game,"minimumCameraClearance")>2.15f);
    check("Three completed laps",((int[])Get(game,"completed"))[0]==3);
    check("Forward gate",RacePrototypeGame.CrossedGate(Vector3.back,Vector3.forward,Vector3.zero,Vector3.forward));
    check("Reverse rejected",!RacePrototypeGame.CrossedGate(Vector3.forward,Vector3.back,Vector3.zero,Vector3.forward));

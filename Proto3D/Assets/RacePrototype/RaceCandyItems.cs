@@ -126,6 +126,15 @@ public class RaceCandyItems : MonoBehaviour
         return forward.sqrMagnitude > .01f ? forward.normalized : Vector3.forward;
     }
 
+    void SnapToRoad(Transform part,Vector3 fallback,float rise,bool align)
+    {
+        Vector3 requested=part.position-Vector3.up*rise,point,normal;
+        if(!game.TryRoadSurface(requested,out point,out normal)){
+            for(int k=15;k>=0;k--)if(game.TryRoadSurface(Vector3.Lerp(fallback,requested,k/16f),out point,out normal))break;
+        }
+        part.position=point+normal*rise;
+        if(align)part.rotation=Quaternion.FromToRotation(Vector3.up,normal)*part.rotation;
+    }
     void BuildTrack()
     {
         if (game.route == null || game.route.Length < 3) return;
@@ -142,6 +151,7 @@ public class RaceCandyItems : MonoBehaviour
                 var box = Primitive("Caja sorpresa de azucar", PrimitiveType.Cube, trackRoot, pink);
                 box.position = Point(fraction) + right * (lane - 1) * 3.1f + Vector3.up * 1.35f;
                 box.localScale = Vector3.one * 1.65f;
+                SnapToRoad(box,Point(fraction),1.35f,false);
                 boxes.Add(box); boxReady.Add(0);
                 var mark = Primitive("Lazo de caja", PrimitiveType.Cube, box, cream);
                 mark.localScale = new Vector3(.22f, 1.05f, 1.05f);
@@ -154,6 +164,7 @@ public class RaceCandyItems : MonoBehaviour
             var puddle = Primitive("Charco de malvavisco - ralentiza", PrimitiveType.Cylinder, trackRoot, i == 0 ? cream : chocolate);
             puddle.position = Point(f) + side * (i == 0 ? -2.8f : 2.8f) + Vector3.up * .055f;
             puddle.localScale = new Vector3(6, .055f, 7);
+            SnapToRoad(puddle,Point(f),.055f,true);
             traps.Add(puddle);
             Sign("MALVAVISCO\nDESPACIO", Point(f - .012f) + side * 8, -Tangent(f), warning);
         }
@@ -275,7 +286,7 @@ public class RaceCandyItems : MonoBehaviour
             return;
         }
         for (int m = 0; m < moving.Count; m++)
-            moving[m].position = movingOrigins[m] + movingSides[m] * Mathf.Sin(Time.time * (1.1f + variant * .13f) + m * 2.3f) * 4.7f + Vector3.up * 1.15f;
+            {moving[m].position = movingOrigins[m] + movingSides[m] * Mathf.Sin(Time.time * (1.1f + variant * .13f) + m * 2.3f) * 4.7f + Vector3.up * 1.15f;SnapToRoad(moving[m],movingOrigins[m],1.15f,false);}
         for (int c = 0; c < racers.Length; c++)
         {
             if (!racers[c]) continue;
