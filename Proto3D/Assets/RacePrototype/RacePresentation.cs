@@ -33,8 +33,8 @@ public sealed class RacePresentation : MonoBehaviour
     AudioClip musicClip;
     readonly Dictionary<string, AudioClip> cues = new Dictionary<string, AudioClip>();
     readonly List<Material> generatedMaterials = new List<Material>();
-    GUIStyle title, heading, body, button, tiny;
-    bool stylesReady;
+    readonly List<Material> previewMaterials = new List<Material>();
+    List<Material> activeMaterials;
 
     void Awake()
     {
@@ -44,6 +44,7 @@ public sealed class RacePresentation : MonoBehaviour
         SelectedCharacter = Mathf.Clamp(PlayerPrefs.GetInt(Prefix + "Character", 0), 0, 2);
         Muted = PlayerPrefs.GetInt(Prefix + "Muted", 0) == 1;
         BuildAudio();
+        if(!GetComponent<RaceMenuView>())gameObject.AddComponent<RaceMenuView>();
     }
 
     void Update()
@@ -85,6 +86,9 @@ public sealed class RacePresentation : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    public void SelectVehicle(int index){ChooseVehicle(index);}
+    public void SelectCharacter(int index){SelectedCharacter=Mathf.Clamp(index,0,2);PlayCue("click");}
+    public void SelectTrack(int index){SelectedTrack=Mathf.Clamp(index,0,1);PlayCue("click");}
     void ChooseVehicle(int index)
     {
         if (index == 2 && !CocoaUnlocked) return;
@@ -110,13 +114,14 @@ public sealed class RacePresentation : MonoBehaviour
         if (!kart) return;
         Transform old = kart.transform.Find("Proto3D Vehicle Trim");
         if (old) { old.gameObject.SetActive(false); Destroy(old.gameObject); }
-        foreach (Material material in generatedMaterials) if (material) Destroy(material);
-        generatedMaterials.Clear();
+        var bucket=kart.name.StartsWith("MenuKartPreview")?previewMaterials:generatedMaterials;
+        foreach(Material material in bucket)if(material)Destroy(material);bucket.Clear();activeMaterials=bucket;
         GameObject trim = new GameObject("Proto3D Vehicle Trim");
         trim.transform.SetParent(kart.transform, false);
         Color color = VehicleColors[Mathf.Clamp(SelectedVehicle, 0, 2)];
         Material accent = MakeMaterial(color);
         Material cream = MakeMaterial(new Color(1f, .92f, .76f));
+        var handmade=kart.transform.Find("Candy kart - handmade");if(handmade)foreach(var renderer in handmade.GetComponentsInChildren<Renderer>())if(renderer.name=="Strawberry icing"||renderer.name=="Seat back")renderer.sharedMaterial=accent;
         BuildCharacter(kart.transform,trim.transform,cream);
         Ornament(trim.transform, "Candy spoiler", PrimitiveType.Cube, new Vector3(0, 1.05f, -1.6f), new Vector3(1.65f, .15f, .34f), accent);
         Ornament(trim.transform, "Left trim", PrimitiveType.Cube, new Vector3(-.67f, .72f, .15f), new Vector3(.13f, .12f, 2.3f), accent);
@@ -133,6 +138,7 @@ public sealed class RacePresentation : MonoBehaviour
         }
         else
             Ornament(trim.transform, "Strawberry candy", PrimitiveType.Sphere, new Vector3(0, .87f, 1.05f), new Vector3(.42f, .18f, .5f), accent);
+        activeMaterials=null;
     }
 
     void BuildCharacter(Transform kart,Transform parent,Material cream)
@@ -155,7 +161,7 @@ public sealed class RacePresentation : MonoBehaviour
         if (!shader) shader = Shader.Find("Sprites/Default");
         Material material = new Material(shader);
         material.color = color;
-        generatedMaterials.Add(material);
+        (activeMaterials??generatedMaterials).Add(material);
         return material;
     }
 
@@ -169,80 +175,6 @@ public sealed class RacePresentation : MonoBehaviour
         Collider collider = part.GetComponent<Collider>();
         if (collider) { collider.enabled = false; Destroy(collider); }
         part.GetComponent<Renderer>().sharedMaterial = material;
-    }
-
-    void PrepareStyles()
-    {
-        if (stylesReady) return;
-        Color ink = new Color(.25f, .12f, .25f);
-        title = new GUIStyle(GUI.skin.label) { fontSize = 53, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-        title.normal.textColor = ink;
-        heading = new GUIStyle(title) { fontSize = 23, alignment = TextAnchor.MiddleLeft };
-        body = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true, alignment = TextAnchor.UpperLeft };
-        body.normal.textColor = ink;
-        tiny = new GUIStyle(body) { fontSize = 15 };
-        button = new GUIStyle(GUI.skin.button) { fontSize = 20, fontStyle = FontStyle.Bold, wordWrap = true };
-        stylesReady = true;
-    }
-
-    static void Fill(Rect area, Color color)
-    {
-        Color old = GUI.color;
-        GUI.color = color;
-        GUI.DrawTexture(area, Texture2D.whiteTexture);
-        GUI.color = old;
-    }
-
-    void OnGUI()
-    {
-        if (!MenuOpen) return;
-        Matrix4x4 oldMatrix = GUI.matrix;
-        Color oldColor = GUI.color, oldBackground = GUI.backgroundColor;
-        int oldDepth = GUI.depth;
-        bool oldEnabled = GUI.enabled;
-        try
-        {
-            GUI.depth = -100;
-            GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(Screen.width / 1280f, Screen.height / 720f, 1));
-            PrepareStyles();
-            Fill(new Rect(0, 0, 1280, 720), new Color(.14f, .08f, .2f, .97f));
-            Fill(new Rect(75, 28, 1130, 664), new Color(1f, .95f, .88f));
-            Fill(new Rect(75, 28, 1130, 8), new Color(1f, .4f, .65f));
-            GUI.Label(new Rect(105, 49, 1070, 68), "PROTO3D  /  CANDY GRAND PRIX", title);
-            GUI.Label(new Rect(111, 118, 1070, 30), "3 VUELTAS  ·  3 RIVALES CPU  ·  PODERES DE DULCES", heading);
-            GUI.Label(new Rect(111, 149, 1000, 34), "1. ELIGE TU VEHICULO", heading);
-            for (int i = 0; i < 3; i++)
-            {
-                float x = 111 + i * 353;
-                bool locked = i == 2 && !CocoaUnlocked;
-                Fill(new Rect(x, 187, 335, 128), SelectedVehicle == i ? new Color(1f, .78f, .84f) : new Color(.94f, .89f, .87f));
-                GUI.enabled = !locked;
-                if (GUI.Button(new Rect(x + 10, 196, 315, 42), locked ? "Cocoa Comet  [BLOQUEADO]" : VehicleNames[i] + (SelectedVehicle == i ? "  ✓" : ""), button)) ChooseVehicle(i);
-                GUI.enabled = oldEnabled;
-                GUI.Label(new Rect(x + 14, 251, 309, 64), locked ? "Gana una carrera en primer lugar\npara desbloquearlo." : VehicleDescriptions[i], tiny);
-            }
-            GUI.Label(new Rect(111,328,1000,30),"2. ELIGE TU PERSONAJE",heading); for(int i=0;i<3;i++){GUI.backgroundColor=SelectedCharacter==i?new Color(1,.65f,.78f):Color.white;if(GUI.Button(new Rect(111+i*353,366,335,40),CharacterNames[i]+(SelectedCharacter==i?"  +":""),button)){SelectedCharacter=i;PlayCue("click");}} GUI.backgroundColor=oldBackground; GUI.Label(new Rect(111,418,1000,30),"3. ELIGE TU PISTA",heading);
-            GUI.backgroundColor = SelectedTrack == 0 ? new Color(1f, .55f, .72f) : Color.white;
-            if (GUI.Button(new Rect(111, 454, 511, 45), "SUGAR BLOOM  /  Jardin pastel", button)) { SelectedTrack = 0; PlayCue("click"); }
-            GUI.backgroundColor = SelectedTrack == 1 ? new Color(.65f, .5f, .8f) : Color.white;
-            if (GUI.Button(new Rect(639, 454, 511, 45), "COCOA CLOUD  /  Circuito flotante", button)) { SelectedTrack = 1; PlayCue("click"); }
-            GUI.backgroundColor = oldBackground;
-            GUI.Label(new Rect(112, 505, 1035, 28), "Sugar Bloom: jardin pastel  ·  Cocoa Cloud: un segundo circuito entre nubes de chocolate.", tiny);
-            GUI.Label(new Rect(112, 542, 1035, 57), "WASD / Flechas conducir  ·  Espacio freno  ·  F turbo  ·  E objeto\nC camara  ·  R recuperar  ·  Esc pausa  ·  M sonido  ·  F2 demostracion", body);
-            GUI.backgroundColor = new Color(.42f, .9f, .72f);
-            if (GUI.Button(new Rect(340, 608, 600, 61), "¡CORRER!   /   ENTER", button)) BeginRace();
-            GUI.backgroundColor = oldBackground;
-            if (GUI.Button(new Rect(981, 613, 170, 48), Muted ? "SONIDO: NO" : "SONIDO: SI", button)) SetMuted(!Muted);
-            GUI.Label(new Rect(112, 670, 1050, 23), "Flechas: vehiculo  ·  Tab: ambiente  ·  La seleccion se guarda automaticamente", tiny);
-        }
-        finally
-        {
-            GUI.matrix = oldMatrix;
-            GUI.color = oldColor;
-            GUI.backgroundColor = oldBackground;
-            GUI.depth = oldDepth;
-            GUI.enabled = oldEnabled;
-        }
     }
 
     void BuildAudio()
@@ -326,6 +258,7 @@ public sealed class RacePresentation : MonoBehaviour
         if (musicClip) Destroy(musicClip);
         foreach (AudioClip clip in cues.Values) if (clip) Destroy(clip);
         foreach (Material material in generatedMaterials) if (material) Destroy(material);
+        foreach(Material material in previewMaterials)if(material)Destroy(material);
         cues.Clear();
     }
 }
