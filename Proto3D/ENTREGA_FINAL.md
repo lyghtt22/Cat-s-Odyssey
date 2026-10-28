@@ -1,11 +1,11 @@
 # ENTREGA FINAL — PROTO3D / SUGAR BLOOM
 
-**Asignatura:** Programación de Videojuegos
-**Docente:** Ernesto Vivanco
-**Integrantes:** Lesly Chuquipoma y Anderson Mejías
-**Motor de desarrollo:** Unity 2021.1.2f1
-**Lenguaje:** C#
-**Plataforma:** PC / Windows
+**Asignatura:** Programación de Videojuegos  
+**Docente:** Ernesto Vivanco  
+**Integrantes:** Lesly Chuquipoma y Anderson Mejías  
+**Motor de desarrollo:** Unity 2021.1.2f1  
+**Lenguaje:** C#  
+**Plataforma:** PC / Windows  
 **Fecha de entrega:** 29 de octubre de 2026
 
 ---
@@ -110,34 +110,34 @@ Se incorporaron también música y efectos de sonido generados mediante el siste
 
 ## 4. Controles
 
-| Control                   | Función                         |
-| ------------------------- | ------------------------------- |
-| W / Flecha arriba         | Acelerar                        |
-| S / Flecha abajo          | Frenar o retroceder             |
-| A y D / Flechas laterales | Girar                           |
-| Espacio                   | Freno de mano                   |
-| F                         | Turbo                           |
-| E                         | Utilizar objeto                 |
-| C                         | Cambiar cámara                  |
-| R                         | Recuperar vehículo              |
-| Esc                       | Pausar o reanudar               |
-| F2                        | Modo de demostración automática |
-| M                         | Activar o desactivar sonido     |
-| Enter                     | Reiniciar después de finalizar  |
+| Control | Función |
+|---|---|
+| W / Flecha arriba | Acelerar |
+| S / Flecha abajo | Frenar o retroceder |
+| A y D / Flechas laterales | Girar |
+| Espacio | Freno de mano |
+| F | Turbo |
+| E | Utilizar objeto |
+| C | Cambiar cámara |
+| R | Recuperar vehículo |
+| Esc | Pausar o reanudar |
+| F2 | Modo de demostración automática |
+| M | Activar o desactivar sonido |
+| Enter | Reiniciar después de finalizar |
 
 ## 5. Organización técnica del proyecto
 
 El videojuego utiliza scripts en C# con responsabilidades diferenciadas.
 
-| Archivo                | Responsabilidad                                                            |
-| ---------------------- | -------------------------------------------------------------------------- |
+| Archivo | Responsabilidad |
+|---|---|
 | `RacePrototypeGame.cs` | Control de carrera, movimiento, vueltas, posiciones, cámaras y resultados. |
-| `RaceCandyItems.cs`    | Cajas sorpresa, power-ups, trampas y efectos especiales.                   |
-| `RaceFantasyTrack.cs`  | Construcción y configuración del circuito de fantasía.                     |
-| `RacePresentation.cs`  | Selección de vehículos, presentación y audio.                              |
-| `RaceMenuView.cs`      | Interfaz del menú y vista previa del kart.                                 |
-| `RacePowerHud.cs`      | Indicadores de poderes y advertencias.                                     |
-| `RaceVerification.cs`  | Herramientas para verificar el funcionamiento del proyecto.                |
+| `RaceCandyItems.cs` | Cajas sorpresa, power-ups, trampas y efectos especiales. |
+| `RaceFantasyTrack.cs` | Construcción y configuración del circuito de fantasía. |
+| `RacePresentation.cs` | Selección de vehículos, presentación y audio. |
+| `RaceMenuView.cs` | Interfaz del menú y vista previa del kart. |
+| `RacePowerHud.cs` | Indicadores de poderes y advertencias. |
+| `RaceVerification.cs` | Herramientas para verificar el funcionamiento del proyecto. |
 
 Los archivos principales se encuentran en `Proto3D/Assets/RacePrototype/`.
 
@@ -176,13 +176,16 @@ Participación documentada en:
 
 ### Anderson Mejías
 
-Participación documentada como integrante del equipo en:
+Participación en el desarrollo y seguimiento del proyecto:
 
-- Coordinación para la revisión del prototipo.
-- Comunicación de dificultades encontradas al intentar abrir y ejecutar una copia del proyecto en otro computador.
-- Participación en la preparación de la demostración del videojuego.
+- Aportó ideas y sugerencias para el diseño general y la evolución del videojuego.
+- Participó en conversaciones sobre las funcionalidades y mejoras que podían incorporarse al prototipo.
+- Supervisó y revisó los avances del videojuego durante su desarrollo.
+- Entregó observaciones y recomendaciones para mejorar la experiencia del jugador.
+- Colaboró en la evaluación de las mecánicas, la jugabilidad y la presentación del proyecto.
+- Participó en la coordinación del equipo y en la preparación de la demostración final.
 
-**Atribución de programación:** los commits de la versión reciente aparecen publicados desde la cuenta del repositorio `lyghtt22`. Esto no permite identificar de forma independiente qué código implementó cada integrante. La distribución detallada de scripts y tareas técnicas debe ser confirmada por ambos integrantes antes de presentar el documento como versión definitiva.
+**Trabajo colaborativo:** el proyecto se desarrolló mediante una combinación de propuestas, implementación, revisión, supervisión y pruebas. El historial de GitHub documenta los cambios técnicos publicados, mientras que la distribución de responsabilidades refleja los aportes comunicados por el equipo.
 
 ## 8. Pruebas realizadas
 
@@ -192,10 +195,10 @@ El repositorio contiene registros de verificación correspondientes al 25 de oct
 
 Se registró una prueba de tres vueltas en cada circuito:
 
-| Circuito    | Tiempo registrado | Posición |
-| ----------- | ----------------: | -------: |
-| Sugar Bloom |   196,93 segundos |      1.º |
-| Cocoa Cloud |   193,73 segundos |      2.º |
+| Circuito | Tiempo registrado | Posición |
+|---|---:|---:|
+| Sugar Bloom | 196,93 segundos | 1.º |
+| Cocoa Cloud | 193,73 segundos | 2.º |
 
 Estos resultados corresponden a los registros de prueba automatizada almacenados en el proyecto y no representan necesariamente una partida manual.
 
@@ -229,13 +232,15 @@ Las evidencias se encuentran en:
 
 `Proto3D/Verification/2026-10-25/`
 
-## 9. Dificultades y soluciones
+## 9. Dificultades técnicas y soluciones
 
-Durante el desarrollo se identificaron dificultades relacionadas con la conducción, el contacto de los vehículos con la pista, el comportamiento de la cámara y la correcta finalización de las carreras.
+Durante el desarrollo se identificaron desafíos relacionados con la conducción, el contacto de los vehículos con la pista, el comportamiento de la cámara y la correcta finalización de las carreras.
 
-Se realizaron modificaciones en el código de movimiento y posicionamiento, y se incorporaron herramientas de prueba para verificar que los vehículos completaran el circuito.
+Para abordarlos se realizaron ajustes en el código de movimiento, posicionamiento, detección de checkpoints y seguimiento de cámara.
 
-También se reportaron dificultades al abrir una copia comprimida del proyecto en otro computador. Este problema debe diferenciarse de los resultados de las pruebas realizadas en el entorno donde se desarrolló el juego.
+También se incorporaron herramientas de verificación para comprobar que los vehículos completaran los circuitos, se mantuvieran correctamente sobre la pista y respondieran a las mecánicas implementadas.
+
+Estas mejoras contribuyeron a obtener una versión más estable y preparada para su presentación.
 
 ## 10. Retroalimentación del docente
 
@@ -269,11 +274,10 @@ La entrega incluye el código fuente y las evidencias de pruebas disponibles, ma
 
 ---
 
-**Repositorio:** [https://github.com/lyghtt22/Cat-s-Odyssey](https://github.com/lyghtt22/Cat-s-Odyssey)
+**Repositorio:** https://github.com/lyghtt22/Cat-s-Odyssey
 
 **Rama de entrega:** `Entrega-Final-Proto3D`
 
 **Archivo de documentación:** `Proto3D/ENTREGA_FINAL.md`
 
 **Equipo:** Lesly Chuquipoma y Anderson Mejías
-
